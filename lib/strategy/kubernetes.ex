@@ -224,7 +224,8 @@ defmodule Cluster.Strategy.Kubernetes do
 
         case :httpc.request(:get, {'https://#{master}/#{path}', headers}, http_options, []) do
           {:ok, {{_version, 200, _status}, _headers, body}} ->
-            parse_response(ip_lookup_mode, Jason.decode!(body))
+            #parse_response(ip_lookup_mode, Jason.decode!(body))
+            parse_response(ip_lookup_mode, Poison.decode!(body))
             |> Enum.map(fn node_info ->
               format_node(
                 Keyword.get(config, :mode, :ip),
@@ -236,7 +237,8 @@ defmodule Cluster.Strategy.Kubernetes do
             end)
 
           {:ok, {{_version, 403, _status}, _headers, body}} ->
-            %{"message" => msg} = Jason.decode!(body)
+            #%{"message" => msg} = Jason.decode!(body)
+            %{"message" => msg} = Poison.decode!(body)
             warn(topology, "cannot query kubernetes (unauthorized): #{msg}")
             []
 
